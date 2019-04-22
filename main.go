@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/lcl101/myss/core"
 )
 
 func main() {
@@ -16,7 +18,7 @@ func main() {
 	flag.Parse()
 	// configFile = "/home/aoki/work/bin/liclss.conf"
 	// geoipdb = "/home/aoki/work/bin/geoip.mmdb"
-	// flora.Run(configFile, geoipdb)
+	core.Run(configFile, geoipdb)
 }
 
 /*获取当前文件执行的路径*/
