@@ -110,6 +110,7 @@ func handleConnection(conn net.Conn) {
 	if nil != err {
 		return
 	}
+	// log.Printf("hostType is %d", hostType)
 	remote, err := matchRuleAndCreateConn(conn, host, hostType, rawData)
 	if nil != err {
 		log.Printf("%v", err)
@@ -130,38 +131,52 @@ func matchRuleAndCreateConn(conn net.Conn, addr string, hostType int, raw []byte
 	if nil == conn {
 		return nil, errors.New("local connect is nil")
 	}
+	// log.Printf("addr is %s", addr)
 	host, _, _ := net.SplitHostPort(addr)
+	// log.Printf("host is %s", host)
 	var rule *Rule
 	rule = matchBypass(host)
+	
 	if nil == rule {
-		switch hostType {
-		case typeIPv4, typeIPv6:
-			rule = matchIpRule(host)
-		case typeDm:
+		rule = matchIpRule(host)
+		if nil == rule {
 			rule = matchDomainRule(host)
 		}
+		// switch hostType {
+		// case typeIPv4, typeIPv6:
+		// 	rule = matchIpRule(host)
+		// case typeDm:
+		// 	rule = matchDomainRule(host)
+		// }
 	}
+	// log.Println("run not exit!!!!!!!!!!!!!!")
 	if nil == rule {
 		if nil != proxyConfig.ruleFinal {
 			rule = proxyConfig.ruleFinal
 		} else {
 			rule = &Rule{Match: "default", Action: ServerTypeDirect}
 		}
+		// log.Printf("addr is %s rule error", addr)
+	} else {
+		// log.Printf("addr rule is %s", rule.Match)
 	}
 	return createRemoteConn(raw, rule, addr)
 }
 
 func matchDomainRule(domain string) *Rule {
+	// log.Printf("ruleSuffixDomains is %s", domain)
 	for _, rule := range proxyConfig.ruleSuffixDomains {
 		if strings.HasSuffix(domain, rule.Match) {
 			return rule
 		}
 	}
+	// log.Printf("rulePrefixDomains is %s", domain)
 	for _, rule := range proxyConfig.rulePrefixDomains {
 		if strings.HasPrefix(domain, rule.Match) {
 			return rule
 		}
 	}
+	// log.Printf("ruleKeywordDomains is %s", domain)
 	for _, rule := range proxyConfig.ruleKeywordDomains {
 		if strings.Contains(domain, rule.Match) {
 			return rule
@@ -171,15 +186,23 @@ func matchDomainRule(domain string) *Rule {
 }
 
 func matchIpRule(addr string) *Rule {
+	// log.Printf("iprule addr is %s", addr)
 	ips := resolveRequestIPAddr(addr)
+	if ips == nil {
+		log.Printf("host %s ip is null", addr)
+	}
+	// log.Printf("ips is %v", ips)
 	if nil != ips {
 		country := strings.ToLower(GeoIPs(ips))
+		// log.Printf("country is %s", country)
 		for _, rule := range proxyConfig.ruleGeoIP {
+			// log.Printf("for rule match %s", rule.Match)
 			if len(country) != 0 && strings.ToLower(rule.Match) == country {
 				return rule
 			}
 		}
 	}
+	// log.Println("ip rule is nil")
 	return nil
 }
 

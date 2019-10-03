@@ -11,6 +11,7 @@ import (
 var geoDB *geoip2.Reader
 
 func loadGeoIP(geoFile string) {
+	log.Printf("load geofile=%s \n", geoFile)
 	db, err := geoip2.Open(geoFile)
 	// defer db.Close()
 	if err != nil {
@@ -37,6 +38,7 @@ func GeoIP(ip net.IP) string {
 	// log.Println("Lookup GEO IP", ip)
 	country, err := geoDB.Country(ip)
 	if err != nil {
+		log.Fatal("geo ip error!")
 		return ""
 	}
 	return strings.ToLower(country.Country.IsoCode)

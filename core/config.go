@@ -118,7 +118,6 @@ func loadGeneral(config *ProxyConfig) {
 			config.bypassDomains[i] = v
 		}
 	}
-
 }
 
 // [Proxy] Section
@@ -152,7 +151,6 @@ func loadProxy(config *ProxyConfig) {
 			config.proxyServer[proxyName] = proxy
 		}
 	}
-
 }
 
 func (c *ProxyConfig) GetProxyServer(action string) (ProxyServer, error) {
